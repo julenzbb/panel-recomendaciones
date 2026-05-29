@@ -1,8 +1,29 @@
-# Panel Recomendaciones (App de escritorio)
+# Panel Recomendaciones
 
-App de escritorio (Mac + Windows) que abre el **Panel de Configuración** para generar
-el JSON de recomendación de productos. El panel en sí es un único HTML autocontenido
-(`renderer/index.html`), empaquetado con **Electron**.
+Panel de configuración para generar el JSON de recomendación de productos.
+El panel es un único HTML autocontenido (`renderer/index.html`).
+
+Se puede usar de dos formas:
+
+## 1. Versión web (recomendada — sin instalar nada)
+
+**https://julenzbb.github.io/panel-recomendaciones/**
+
+Solo abrir el enlace en el navegador. Es la forma más sencilla para equipos
+de negocio: cero instalación, siempre actualizada, sin avisos de seguridad.
+Se actualiza automáticamente en cada cambio que se sube a `main`.
+
+> El panel funciona 100% en local en el navegador (no envía datos a ningún
+> servidor); solo genera el JSON que luego copias o descargas.
+
+## 2. App de escritorio (Mac + Windows)
+
+Empaquetada con **Electron**. Útil para trabajar sin conexión o tener un icono
+en el dock/escritorio. Descargas en la sección **Releases** del repo.
+
+> Nota macOS: la app no está firmada con certificado de Apple, así que la primera
+> vez hay que abrirla con **clic derecho → Abrir** (o Ajustes del Sistema →
+> Privacidad y Seguridad → "Abrir de todos modos"). Por eso se recomienda la web.
 
 ## Estructura
 
@@ -13,6 +34,9 @@ el JSON de recomendación de productos. El panel en sí es un único HTML autoco
 ├── preload.js               # Vacío a propósito (seguridad).
 ├── package.json             # Config de la app + electron-builder.
 ├── build/                   # Iconos: icon.icns (Mac), icon.ico (Windows).
+└── .github/workflows/
+    ├── build.yml            # CI: compila apps Mac+Win y publica Release.
+    └── deploy-web.yml       # CI: publica la web en GitHub Pages.
 └── .github/workflows/build.yml  # CI: compila Mac+Win y publica Release.
 ```
 
