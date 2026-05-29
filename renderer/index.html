@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Panel de Configuración · Recomendación de Productos (MECACO)</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --border: #e2e6ef;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --primary: #2f6fed;
+    --primary-dark: #1f57c9;
+    --danger: #e0506a;
+    --danger-bg: #fdecef;
+    --ok: #1f9d6b;
+    --warn: #b8860b;
+    --chip: #eef3ff;
+    --shadow: 0 1px 3px rgba(20,30,60,.08), 0 6px 20px rgba(20,30,60,.06);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  header.app {
+    background: linear-gradient(120deg, #1f2430, #2f3a52);
+    color: #fff;
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  header.app h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  header.app p { margin: 2px 0 0; font-size: 12px; opacity: .75; }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 460px;
+    gap: 20px;
+    padding: 20px 28px 60px;
+    align-items: start;
+  }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+  }
+  .card-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .card-head h2 { margin: 0; font-size: 15px; }
+  .card-body { padding: 18px; }
+
+  label.field { display: block; margin-bottom: 14px; }
+  label.field > .lbl { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; }
+  label.field > .hint { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; margin-bottom: 6px; }
+  input[type=text], input[type=number], select, textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 13.5px;
+    font-family: inherit;
+    background: #fff;
+    color: var(--text);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: var(--primary); }
+  select[multiple] { min-height: 120px; }
+
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 140px; }
+
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    background: var(--primary);
+    color: #fff;
+    transition: background .12s;
+  }
+  button:hover { background: var(--primary-dark); }
+  button.ghost { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+  button.ghost:hover { background: var(--chip); }
+  button.subtle { background: #eef0f5; color: var(--text); }
+  button.subtle:hover { background: #e3e6ee; }
+  button.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  button.danger:hover { background: var(--danger-bg); }
+  button.tiny { padding: 5px 9px; font-size: 12px; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .spacer { flex: 1; }
+
+  .module-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .module-head {
+    background: #f7f9fd;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+  }
+  .module-head .pos {
+    background: var(--primary);
+    color: #fff;
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 12px;
+    flex: none;
+  }
+  .module-head .mtitle { font-weight: 600; }
+  .module-head .mtype { color: var(--muted); font-size: 12px; }
+  .module-head .arrow { transition: transform .15s; color: var(--muted); }
+  .module-head.collapsed .arrow { transform: rotate(-90deg); }
+  .module-body { padding: 16px; }
+  .module-body.hidden { display: none; }
+
+  .source-card {
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    background: #fbfcfe;
+  }
+  .source-card .sc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .source-card .sc-head .badge { background: var(--chip); color: var(--primary-dark); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+
+  .qp-card { border-left: 3px solid var(--primary); padding-left: 12px; margin: 10px 0; }
+
+  .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .chip { background: var(--chip); color: var(--primary-dark); padding: 4px 8px; border-radius: 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .chip button { background: none; color: var(--primary-dark); padding: 0; font-size: 14px; line-height: 1; }
+  .chip button:hover { color: var(--danger); }
+
+  .preview-wrap { position: sticky; top: 20px; }
+  pre.json {
+    background: #0e1422;
+    color: #e6edf7;
+    padding: 16px;
+    border-radius: 10px;
+    overflow: auto;
+    max-height: 62vh;
+    font-size: 12.5px;
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    margin: 0;
+  }
+  .json .k { color: #7ec5ff; }
+  .json .s { color: #9ee6a0; }
+  .json .n { color: #f0b86e; }
+  .json .b { color: #d68cf0; }
+
+  .pill { display:inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+  .pill.ok { background: #e3f6ee; color: var(--ok); }
+  .pill.err { background: var(--danger-bg); color: var(--danger); }
+
+  .validation { margin-bottom: 12px; }
+  .validation .v-item { font-size: 12.5px; padding: 6px 10px; border-radius: 8px; margin-bottom: 6px; }
+  .validation .v-err { background: var(--danger-bg); color: var(--danger); }
+  .validation .v-warn { background: #fdf4e0; color: var(--warn); }
+
+  .seg { display: inline-flex; background: #eef0f5; border-radius: 9px; padding: 3px; gap: 3px; }
+  .seg button { background: transparent; color: var(--muted); padding: 6px 14px; }
+  .seg button.active { background: #fff; color: var(--text); box-shadow: var(--shadow); }
+
+  .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
+  .help { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+  details.usecase { border: 1px solid var(--border); border-radius: 9px; margin-bottom: 8px; }
+  details.usecase summary { padding: 10px 14px; cursor: pointer; font-weight: 600; }
+  details.usecase .uc-body { padding: 0 14px 14px; font-size: 12.5px; color: var(--muted); }
+  .modal-bg { position: fixed; inset: 0; background: rgba(15,20,34,.5); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal-bg.show { display: flex; }
+  .modal { background: #fff; border-radius: var(--radius); max-width: 640px; width: 100%; max-height: 85vh; overflow: auto; box-shadow: var(--shadow); }
+  .modal .m-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display:flex; justify-content: space-between; align-items:center; }
+  .modal .m-body { padding: 20px; }
+  .uc-pick { border: 1px solid var(--border); border-radius: 9px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer; }
+  .uc-pick:hover { border-color: var(--primary); background: var(--chip); }
+  .uc-pick h4 { margin: 0 0 4px; font-size: 13.5px; }
+  .uc-pick p { margin: 0; font-size: 12px; color: var(--muted); }
+  .grp-title { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin: 16px 0 6px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div>
+    <h1>Panel de Configuración de Recomendaciones</h1>
+    <p>Genera el JSON que indica QUÉ, CÓMO y DÓNDE pintar los productos personalizados. Sin tocar código.</p>
+  </div>
+  <div class="toolbar">
+    <button class="ghost" id="btnImport">Importar JSON</button>
+    <input type="file" id="fileImport" accept=".json,application/json" style="display:none" />
+    <button class="subtle" id="btnReset">Empezar de cero</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- ====== EDITOR ====== -->
+  <div>
+    <div class="card">
+      <div class="card-head">
+        <h2>1 · Plataforma de destino</h2>
+      </div>
+      <div class="card-body">
+        <label class="field">
+          <span class="lbl">¿Dónde se va a usar esta configuración?</span>
+          <span class="hint">En WEB los módulos se separan en "mobile" y "desktop". En APP es un único listado de módulos.</span>
+          <div class="seg" id="platformSeg">
+            <button data-plat="app" class="active">App (móvil/tablet)</button>
+            <button data-plat="web">Web (mobile + desktop)</button>
+          </div>
+        </label>
+        <div id="webTabs" style="display:none; margin-top: 10px;">
+          <span class="lbl">Estás editando los módulos de:</span>
+          <div class="seg" id="webViewSeg" style="margin-top:6px;">
+            <button data-view="mobile" class="active">Mobile</button>
+            <button data-view="desktop">Desktop</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>2 · Módulos a pintar</h2>
+        <div class="toolbar">
+          <button class="ghost" id="btnUseCase">+ Desde caso de uso</button>
+          <button id="btnAddModule">+ Módulo vacío</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="modulesContainer"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Guía rápida de casos de uso</h2></div>
+      <div class="card-body" id="ucGuide"></div>
+    </div>
+  </div>
+
+  <!-- ====== PREVIEW ====== -->
+  <div class="preview-wrap">
+    <div class="card">
+      <div class="card-head">
+        <h2>JSON generado</h2>
+        <span id="validStatus" class="pill ok">Válido</span>
+      </div>
+      <div class="card-body">
+        <div class="validation" id="validationBox"></div>
+        <pre class="json" id="jsonOut"></pre>
+        <div class="toolbar" style="margin-top:14px;">
+          <button id="btnCopy">Copiar</button>
+          <button class="ghost" id="btnDownload">Descargar .json</button>
+          <span class="spacer"></span>
+          <span class="help" id="moduleCount"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<datalist id="strategyList">
+  <option value="FBT"></option>
+  <option value="OYML"></option>
+  <option value="RELATED"></option>
+  <option value="SIMILAR"></option>
+  <option value="RFY"></option>
+  <option value="TRENDS"></option>
+</datalist>
+
+<!-- modal casos de uso -->
+<div class="modal-bg" id="ucModal">
+  <div class="modal">
+    <div class="m-head">
+      <h2 style="margin:0;font-size:16px;">Elige un caso de uso</h2>
+      <button class="subtle tiny" id="ucClose">Cerrar</button>
+    </div>
+    <div class="m-body" id="ucModalBody"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   DOMINIO (extraído del documento MECACO)
+   ============================================================ */
+
+const MODULE_TYPES = [
+  { v: "moreInfo",            l: "moreInfo — Info de producto (App/Mobile)", desc: "Sección de info de producto: Stock en tienda, Devoluciones, etc. sourceList vacío." },
+  { v: "miniGrid",            l: "miniGrid — Grid pequeño", desc: "Layout en grid." },
+  { v: "smallCarousel",       l: "smallCarousel — Carrusel", desc: "Layout en carrusel." },
+  { v: "bigCarousel",         l: "bigCarousel — Carrusel grande", desc: "Carrusel más grande." },
+  { v: "desktopInfoCarousel", l: "desktopInfoCarousel — Carrusel info (Desktop)", desc: "Carrusel arriba con la info de producto en ficha." },
+  { v: "tabCarrousel",        l: "tabCarrousel — Tabs (solo texto)", desc: "Vista modo Tab solo texto. xmediaLocation no procede." },
+  { v: "strechMinigrid",      l: "strechMinigrid — Grid estrecho (menú)", desc: "Grid estrecho usado en menú." },
+  { v: "cms",                 l: "cms — Definido desde CMS", desc: "La vista viene del CMS. Necesario para componentes de la Home." },
+  { v: "gridElement",         l: "gridElement — Bloque inyectado en parrilla", desc: "Bloque de producto básico inyectado en una parrilla normal." },
+];
+
+const SOURCES = [
+  { v: "shopTheLook",     l: "shopTheLook — Completar el look", api: false, desc: "Productos que completan el look (de los detalles del producto)." },
+  { v: "yodaNavigation",  l: "yodaNavigation — OYML (navegación)", api: true,  strategy: "", desc: "Recomienda productos según la navegación. Necesita API." },
+  { v: "yodaFBT",         l: "yodaFBT — Frecuentemente comprados", api: true,  strategy: "FBT", desc: "Productos frecuentemente comprados juntos. Necesita API." },
+  { v: "yodaSimilar",     l: "yodaSimilar — Similares", api: true,  strategy: "", desc: "Productos similares a los relacionados. Necesita API." },
+  { v: "yodaForYou",      l: "yodaForYou — RFY (para ti)", api: true,  strategy: "", desc: "Recomienda según compras del usuario. Necesita API." },
+  { v: "yodaTrends",      l: "yodaTrends — Tendencias", api: true,  strategy: "", desc: "Productos en tendencia del mercado. Necesita API." },
+  { v: "yodaPacmanLook",  l: "yodaPacmanLook — Look (PACMAN)", api: true,  strategy: "", desc: "Productos del look desde PACMAN (depreca shopTheLook). Necesita API." },
+  { v: "lastSeen",        l: "lastSeen — Últimos vistos", api: false, desc: "Últimos productos vistos por el usuario." },
+  { v: "categoriesManual",l: "categoriesManual — Categorías manuales", api: false, desc: "Categorías concretas definidas en categoryIdsSRO (mujer) y categoryIdsCRO (hombre)." },
+  { v: "yodaCategories",  l: "yodaCategories — Categorías (API actual)", api: true, desc: "Mantiene la lógica/API actual (aún no migrado)." },
+  { v: "socialMedia",     l: "socialMedia — Redes sociales", api: false, desc: "Media de redes sociales. xmediaLocation no procede." },
+  { v: "category",        l: "category — Parrilla de categoría", api: false, desc: "Productos de una categoría (como una parrilla). Usa categoryId fuera de queryParams. Sin queryParams." },
+];
+
+const PLACEMENTS = [
+  "home", "newsletter", "cart_page", "cart_toast", "grid_page",
+  "product_page", "search_page", "wihslist_page", "similar",
+  "menu", "return_page", "grid_inaugural", "complete_look"
+];
+
+// Valores de estrategia vistos en configuraciones reales (campo libre, estos son sugerencias)
+const STRATEGIES = ["FBT", "OYML", "RELATED", "SIMILAR", "RFY", "TRENDS"];
+
+const RECOMMENDATION_MODELS = ["google", "wide-eyes", "yoda", "vue"];
+const PRICE_FILTERS = ["fullPrice", "sales", "both"];
+const SECTION_NAMES = ["WOMAN", "MAN", "KID", "MASSIMODUTTI-WOMAN", "MASSIMODUTTI-MAN"];
+const BRAND_GROUPS = ["zara", "zarahome", "massimodutti"];
+const CHANNELS = ["web", "web-mobile", "android", "ios"];
+
+// layoutProperties: propiedades de pintado del módulo (vistas en ejemplos reales)
+const LAYOUT_BOOL_PROPS = [
+  { k: "showWishlist",    l: "Mostrar Wishlist" },
+  { k: "showAddToCart",   l: "Mostrar Añadir al carrito" },
+  { k: "showColours",     l: "Mostrar colores" },
+  { k: "showProductName", l: "Mostrar nombre de producto" },
+  { k: "showTags",        l: "Mostrar tags" },
+  { k: "showDiscount",    l: "Mostrar descuento" },
+  { k: "showPrewarming",  l: "Mostrar prewarming" },
+];
+
+// otherParams: variables con lógica que resuelve la frontal
+const OTHER_PARAMS = [
+  "categoryId", "familyName", "priceType", "campaign", "sectionName",
+  "productIds", "productReferences", "selectedSizeId", "sessionId",
+  "userId", "visitorId", "locale", "channel"
+];
+
+/* Plantillas de casos de uso (del apartado CASOS DE USO del doc) */
+const USE_CASES = [
+  { group: "Home", id: "home", name: "Home", desc: "Recomendaciones en la home.",
+    module: { type: "bigCarousel", title: "RECOMMENDED_HOME_TITLE", placement: "home", source: "yodaTrends", size: 12 } },
+
+  { group: "Cesta", id: "cart_related", name: "Relacionados con productos de cesta", desc: "Recomendaciones en el contexto del carrito.",
+    module: { type: "smallCarousel", title: "CART_RELATED_TITLE", placement: "cart_page", source: "yodaFBT", strategy: "FBT", size: 12, other: ["productIds"] } },
+  { group: "Cesta", id: "cart_empty", name: "Recomendados con la cesta vacía", desc: "Cuando la cesta está vacía.",
+    module: { type: "smallCarousel", title: "CART_EMPTY_TITLE", placement: "cart_page", source: "yodaForYou", size: 12 } },
+  { group: "Cesta", id: "cart_similar", name: "Similares (talla agotada en cesta)", desc: "Producto agotado y sin coming soon en cesta.",
+    module: { type: "smallCarousel", title: "CART_SIMILAR_TITLE", placement: "similar", source: "yodaSimilar", size: 12, other: ["productIds"] } },
+  { group: "Cesta", id: "cart_toast", name: "Toast tras añadir al carrito", desc: "Modal/toast tras añadir a cesta.",
+    module: { type: "smallCarousel", title: "CART_TOAST_TITLE", placement: "cart_toast", source: "yodaFBT", strategy: "FBT", size: 8, other: ["productIds"] } },
+
+  { group: "Ficha producto", id: "pdp_grid", name: "Grid recomendados en info producto", desc: "Grid de recomendados en la ficha.",
+    module: { type: "miniGrid", title: "PDP_RECOMMENDED_TITLE", placement: "product_page", source: "yodaFBT", strategy: "FBT", size: 12, other: ["productIds"] } },
+  { group: "Ficha producto", id: "pdp_similar", name: "Similares (talla agotada)", desc: "Similares cuando la talla está agotada y sin coming soon.",
+    module: { type: "smallCarousel", title: "PDP_SIMILAR_TITLE", placement: "similar", source: "yodaSimilar", size: 12, other: ["productIds", "selectedSizeId"] } },
+  { group: "Ficha producto", id: "pdp_lookpacman", name: "Completar el look (PACMAN)", desc: "Productos del look.",
+    module: { type: "smallCarousel", title: "PDP_LOOK_TITLE", placement: "product_page", source: "yodaPacmanLook", size: 12, other: ["productIds"] } },
+
+  { group: "Wishlist", id: "wishlist_empty", name: "Recomendados con la wishlist vacía", desc: "Wishlist vacía.",
+    module: { type: "smallCarousel", title: "WISHLIST_EMPTY_TITLE", placement: "wihslist_page", source: "yodaForYou", size: 12 } },
+  { group: "Wishlist", id: "wishlist_similar", name: "Similares (agotado en wishlist)", desc: "Producto agotado y sin coming soon en wishlist.",
+    module: { type: "smallCarousel", title: "WISHLIST_SIMILAR_TITLE", placement: "similar", source: "yodaSimilar", size: 12, other: ["productIds"] } },
+
+  { group: "Menú", id: "menu_categories", name: "Categorías recomendadas", desc: "Categorías concretas en el menú.",
+    module: { type: "strechMinigrid", title: "MENU_CATEGORIES_TITLE", source: "categoriesManual", size: 6, categoriesManual: true } },
+  { group: "Menú", id: "menu_by_category", name: "Recomendados por categoría", desc: "Parrilla por categoría.",
+    module: { type: "strechMinigrid", title: "MENU_BY_CATEGORY_TITLE", source: "category", size: 6, useCategoryIdRoot: true } },
+
+  { group: "Buscador", id: "search_start", name: "Pantalla inicio buscador", desc: "Recomendaciones en el inicio del buscador.",
+    module: { type: "smallCarousel", title: "SEARCH_START_TITLE", placement: "search_page", source: "yodaForYou", size: 12 } },
+
+  { group: "Otros", id: "return_confirm", name: "Pantalla confirmación devolución", desc: "Confirmación de devolución.",
+    module: { type: "smallCarousel", title: "RETURN_CONFIRM_TITLE", placement: "return_page", source: "yodaForYou", size: 12 } },
+  { group: "Otros", id: "coming_soon_confirm", name: "Confirmación registro coming soon", desc: "Tras registrarse a un coming soon.",
+    module: { type: "smallCarousel", title: "COMING_SOON_TITLE", placement: "product_page", source: "yodaSimilar", size: 12, other: ["productIds"] } },
+  { group: "Otros", id: "more_info", name: "Info de producto (moreInfo)", desc: "Bloque de info de producto, sin sources.",
+    module: { type: "moreInfo", title: "MORE_INFO_TITLE", noSource: true } },
+  { group: "Otros", id: "social_media", name: "Redes sociales", desc: "Media de redes sociales.",
+    module: { type: "smallCarousel", title: "SOCIAL_MEDIA_TITLE", source: "socialMedia", size: 6, noXmedia: true } },
+];
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+
+let state = {
+  platform: "app",          // app | web
+  webView: "mobile",        // mobile | desktop (solo web)
+  app: [],                  // modules[]
+  web: { mobile: [], desktop: [] },
+};
+
+let uid = 1;
+const nid = () => uid++;
+
+function newModule(preset = {}) {
+  return {
+    _id: nid(),
+    _collapsed: false,
+    position: 0,
+    type: preset.type || "smallCarousel",
+    title: preset.title ?? "",
+    subtitle: preset.subtitle ?? "",
+    xmediaLocation: preset.xmediaLocation ?? 0,
+    sourceList: preset.sourceList || [],
+    // analyticsZenit: { list: "..." }
+    analyticsList: preset.analyticsList ?? "",
+    // layoutProperties (array con 1 objeto)
+    useLayout: preset.useLayout ?? false,
+    layout: preset.layout || newLayout(),
+  };
+}
+
+function newLayout(preset = {}) {
+  const o = {};
+  LAYOUT_BOOL_PROPS.forEach(p => { o[p.k] = preset[p.k] ?? false; });
+  o.columns = preset.columns ?? ""; // solo web
+  return o;
+}
+
+function newSource(preset = {}) {
+  return {
+    _id: nid(),
+    source: preset.source || "yodaForYou",
+    size: preset.size ?? 12,
+    placement: preset.placement ?? "",
+    viewMoreEnabled: preset.viewMoreEnabled ?? false,
+    categoryIdsSRO: preset.categoryIdsSRO || [],
+    categoryIdsCRO: preset.categoryIdsCRO || [],
+    useCategoryIdRoot: preset.useCategoryIdRoot ?? false, // categoryId fuera de queryParams (source=category)
+    categoryIdRoot: preset.categoryIdRoot || { WOMAN: "", MAN: "" },
+    useQueryParams: preset.useQueryParams ?? true,
+    qp: preset.qp || newQueryParams(),
+  };
+}
+
+function newQueryParams(preset = {}) {
+  return {
+    recommendationModel: preset.recommendationModel ?? "",
+    productLimit: preset.productLimit ?? "",
+    strategy: preset.strategy ?? "",
+    priceType: preset.priceType ?? "",
+    campaign: preset.campaign ?? "",
+    familyName: preset.familyName || [],
+    useCategoryId: preset.useCategoryId ?? false,
+    categoryId: preset.categoryId || { WOMAN: "", MAN: "" },
+    otherParams: preset.otherParams || [],
+  };
+}
+
+/* getter del array de módulos actual según plataforma/vista */
+function currentModules() {
+  if (state.platform === "app") return state.app;
+  return state.web[state.webView];
+}
+function setCurrentModules(arr) {
+  if (state.platform === "app") state.app = arr;
+  else state.web[state.webView] = arr;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const el = (tag, attrs = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") e.className = v;
+    else if (k === "html") e.innerHTML = v;
+    else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) e.setAttribute(k, v);
+  }
+  for (const kid of kids) {
+    if (kid === null || kid === undefined || kid === false) continue;
+    e.append(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+};
+
+function optionEls(list, selected, withEmpty, emptyLabel) {
+  const out = [];
+  if (withEmpty) out.push(el("option", { value: "" }, emptyLabel || "— (no enviar) —"));
+  for (const item of list) {
+    const v = typeof item === "string" ? item : item.v;
+    const l = typeof item === "string" ? item : item.l;
+    const o = el("option", { value: v }, l);
+    if (v === selected) o.selected = true;
+    out.push(o);
+  }
+  return out;
+}
+
+function field(labelText, hintText, control) {
+  const lbl = el("label", { class: "field" }, el("span", { class: "lbl" }, labelText));
+  if (hintText) lbl.append(el("span", { class: "hint" }, hintText));
+  lbl.append(control);
+  return lbl;
+}
+
+/* ---- multi-valor (chips) editor para arrays de strings ---- */
+function arrayEditor(values, onChange, placeholder) {
+  const wrap = el("div");
+  const inputRow = el("div", { class: "row" });
+  const input = el("input", { type: "text", placeholder: placeholder || "Escribe y pulsa Añadir" });
+  const addBtn = el("button", { class: "subtle tiny", type: "button", onclick: () => {
+    const v = input.value.trim();
+    if (v) { values.push(v); input.value = ""; onChange(values); renderChips(); }
+  } }, "Añadir");
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addBtn.click(); } });
+  inputRow.append(input, el("div", { style: "flex:none" }, addBtn));
+  const chips = el("div", { class: "chip-list" });
+  function renderChips() {
+    chips.innerHTML = "";
+    values.forEach((v, i) => {
+      chips.append(el("span", { class: "chip" }, v, el("button", { type: "button", onclick: () => {
+        values.splice(i, 1); onChange(values); renderChips();
+      } }, "×")));
+    });
+    if (!values.length) chips.append(el("span", { class: "help" }, "Vacío"));
+  }
+  renderChips();
+  wrap.append(inputRow, chips);
+  return wrap;
+}
+
+/* ---- multi-select de otherParams ---- */
+function multiCheck(options, selected, onChange) {
+  const wrap = el("div", { class: "chip-list" });
+  options.forEach(opt => {
+    const checked = selected.includes(opt);
+    const chip = el("button", {
+      type: "button",
+      class: checked ? "tiny" : "subtle tiny",
+      style: checked ? "" : "opacity:.8",
+      onclick: () => {
+        const i = selected.indexOf(opt);
+        if (i >= 0) selected.splice(i, 1); else selected.push(opt);
+        onChange(selected); rebuild();
+      }
+    }, (checked ? "✓ " : "+ ") + opt);
+    wrap.append(chip);
+  });
+  function rebuild() { wrap.innerHTML = ""; multiCheckInner(); }
+  function multiCheckInner() {
+    options.forEach(opt => {
+      const checked = selected.includes(opt);
+      wrap.append(el("button", {
+        type: "button",
+        class: checked ? "tiny" : "subtle tiny",
+        onclick: () => {
+          const i = selected.indexOf(opt);
+          if (i >= 0) selected.splice(i, 1); else selected.push(opt);
+          onChange(selected); rebuild();
+        }
+      }, (checked ? "✓ " : "+ ") + opt));
+    });
+  }
+  wrap.innerHTML = ""; multiCheckInner();
+  return wrap;
+}
+
+function renderModules() {
+  const container = $("#modulesContainer");
+  container.innerHTML = "";
+  const mods = currentModules();
+  if (!mods.length) {
+    container.append(el("div", { class: "empty" },
+      el("p", {}, "Aún no hay módulos."),
+      el("p", { class: "help" }, "Pulsa “+ Desde caso de uso” para empezar rápido, o “+ Módulo vacío”.")
+    ));
+  }
+  mods.forEach((m, idx) => container.append(renderModuleCard(m, idx, mods)));
+  renderOutput();
+}
+
+function renderModuleCard(m, idx, mods) {
+  const card = el("div", { class: "module-card" });
+  const typeMeta = MODULE_TYPES.find(t => t.v === m.type);
+  const head = el("div", { class: "module-head" + (m._collapsed ? " collapsed" : "") });
+  head.append(
+    el("span", { class: "pos" }, String(m.position)),
+    el("div", {}, el("div", { class: "mtitle" }, m.title || "(sin título)"),
+                   el("div", { class: "mtype" }, (typeMeta ? typeMeta.v : m.type) + " · " + m.sourceList.length + " fuente(s)")),
+    el("span", { class: "spacer", style: "flex:1" }),
+    el("button", { class: "subtle tiny", type: "button", title: "Subir", onclick: (e) => { e.stopPropagation(); move(mods, idx, -1); } }, "↑"),
+    el("button", { class: "subtle tiny", type: "button", title: "Bajar", onclick: (e) => { e.stopPropagation(); move(mods, idx, 1); } }, "↓"),
+    el("button", { class: "danger tiny", type: "button", onclick: (e) => { e.stopPropagation(); mods.splice(idx, 1); reindex(mods); renderModules(); } }, "Eliminar"),
+    el("span", { class: "arrow" }, "▾"),
+  );
+  head.addEventListener("click", () => { m._collapsed = !m._collapsed; renderModules(); });
+  card.append(head);
+
+  const body = el("div", { class: "module-body" + (m._collapsed ? " hidden" : "") });
+
+  // type
+  const typeSel = el("select", { onchange: e => { m.type = e.target.value; renderModules(); } }, ...optionEls(MODULE_TYPES, m.type));
+  body.append(field("Tipo de vista (CÓMO se pinta)", typeMeta ? typeMeta.desc : "", typeSel));
+
+  // position
+  const posInput = el("input", { type: "number", min: "0", value: m.position, onchange: e => { m.position = +e.target.value; renderModules(); } });
+  // title / subtitle
+  const titleInput = el("input", { type: "text", value: m.title, placeholder: "KEY del CMS, ej: RECOMMENDED_HOME_TITLE", oninput: e => { m.title = e.target.value; renderOutputDebounced(); } });
+  const subInput = el("input", { type: "text", value: m.subtitle, placeholder: "KEY del CMS (opcional)", oninput: e => { m.subtitle = e.target.value; renderOutputDebounced(); } });
+
+  const row1 = el("div", { class: "row" },
+    field("Posición (orden de pintado)", "0, 1, 2…", posInput),
+  );
+  body.append(row1);
+  body.append(field("Título (KEY del CMS)", "Si lo dejas vacío, se elimina el espacio del título.", titleInput));
+  body.append(field("Subtítulo (KEY del CMS)", "Opcional. Vacío = sin subtítulo.", subInput));
+
+  // xmediaLocation (no aplica a tabCarrousel/socialMedia/moreInfo)
+  const xmediaApplies = !["tabCarrousel", "moreInfo"].includes(m.type);
+  if (xmediaApplies) {
+    const xm = el("input", { type: "number", min: "0", value: m.xmediaLocation, onchange: e => { m.xmediaLocation = e.target.value === "" ? null : +e.target.value; renderOutput(); } });
+    body.append(field("xmediaLocation", "Location del XMEDIA para pintar productos. Si no existe, se descarta ese producto (sin fallback).", xm));
+  }
+
+  // analyticsZenit
+  body.append(el("div", { class: "grp-title" }, "Analítica (ZENIT)"));
+  const azInput = el("input", { type: "text", value: m.analyticsList, placeholder: "Ej: cross-custom-pdp", oninput: e => { m.analyticsList = e.target.value; renderOutput(); } });
+  body.append(field("analyticsZenit · list", "Nombre de lista para la analítica Zenit del módulo. Vacío = no se envía.", azInput));
+
+  // layoutProperties
+  body.append(el("div", { class: "grp-title" }, "Propiedades de pintado (layoutProperties)"));
+  const lpToggle = el("select", { onchange: e => { m.useLayout = e.target.value === "true"; renderModules(); } },
+    el("option", { value: "false" }, "No incluir layoutProperties"),
+    el("option", { value: "true" }, "Incluir layoutProperties"));
+  lpToggle.value = String(m.useLayout);
+  body.append(field("¿Definir cómo se pinta cada tarjeta de producto?", "Controla qué elementos mostrar (wishlist, precio, etc.).", lpToggle));
+  if (m.useLayout) {
+    const grid = el("div", { class: "chip-list" });
+    LAYOUT_BOOL_PROPS.forEach(p => {
+      const active = !!m.layout[p.k];
+      grid.append(el("button", { type: "button", class: active ? "tiny" : "subtle tiny",
+        onclick: () => { m.layout[p.k] = !m.layout[p.k]; renderModules(); } }, (active ? "✓ " : "○ ") + p.l));
+    });
+    body.append(grid);
+    if (state.platform === "web") {
+      const cols = el("input", { type: "number", min: "1", value: m.layout.columns, placeholder: "Ej: 3", oninput: e => { m.layout.columns = e.target.value === "" ? "" : +e.target.value; renderOutput(); } });
+      body.append(field("columns (solo Web)", "Número de columnas del layout.", cols));
+    }
+  }
+
+  // sourceList
+  const isMoreInfo = m.type === "moreInfo";
+  const slSection = el("div", {});
+  slSection.append(el("div", { class: "grp-title" }, "Fuentes de información (QUÉ se pinta y de DÓNDE)"));
+  if (isMoreInfo) {
+    slSection.append(el("div", { class: "help" }, "El tipo moreInfo no usa fuentes: la lista se enviará vacía."));
+  } else {
+    m.sourceList.forEach((s, si) => slSection.append(renderSourceCard(m, s, si)));
+    slSection.append(el("button", { class: "ghost tiny", type: "button", style: "margin-top:6px", onclick: () => { m.sourceList.push(newSource()); renderModules(); } }, "+ Añadir fuente"));
+  }
+  body.append(slSection);
+
+  card.append(body);
+  return card;
+}
+
+function renderSourceCard(m, s, si) {
+  const meta = SOURCES.find(x => x.v === s.source);
+  const card = el("div", { class: "source-card" });
+  card.append(el("div", { class: "sc-head" },
+    el("span", { class: "badge" }, "Fuente " + (si + 1)),
+    el("span", { class: "help", style: "flex:1" }, meta ? meta.desc : ""),
+    el("button", { class: "danger tiny", type: "button", onclick: () => { m.sourceList.splice(si, 1); renderModules(); } }, "Quitar"),
+  ));
+
+  // source
+  const srcSel = el("select", { onchange: e => {
+    s.source = e.target.value;
+    const sm = SOURCES.find(x => x.v === s.source);
+    // ajustes automáticos al cambiar de source
+    s.useQueryParams = sm && sm.v !== "category"; // category no tiene queryParams
+    s.useCategoryIdRoot = sm && sm.v === "category";
+    if (sm && sm.strategy) s.qp.strategy = sm.strategy;
+    renderModules();
+  } }, ...optionEls(SOURCES, s.source));
+  card.append(field("Source (QUÉ datos)", "", srcSel));
+
+  // size + viewMore
+  const sizeInput = el("input", { type: "number", min: "0", value: s.size, onchange: e => { s.size = +e.target.value; renderOutput(); } });
+  const vmSel = el("select", { onchange: e => { s.viewMoreEnabled = e.target.value === "true"; renderOutput(); } },
+    el("option", { value: "false" }, "No"), el("option", { value: "true" }, "Sí"));
+  vmSel.value = String(s.viewMoreEnabled);
+  card.append(el("div", { class: "row" },
+    field("Nº de productos (size)", "Si falta stock se pintan menos.", sizeInput),
+    field("Botón “Ver más”", "viewMoreEnabled", vmSel),
+  ));
+
+  // placement (key del caso de uso que se pide a la API)
+  const needsPlacement = meta && (meta.api || ["shopTheLook"].includes(s.source));
+  const plSel = el("select", { onchange: e => { s.placement = e.target.value; renderOutput(); } }, ...optionEls(PLACEMENTS, s.placement, true, "— sin placement —"));
+  card.append(field("Placement (key del caso de uso para la API)", "Se mete en el path junto al storeId.", plSel));
+
+  // categoriesManual -> categoryIdsSRO / CRO
+  if (s.source === "categoriesManual") {
+    card.append(field("categoryIdsSRO (categorías de MUJER)", "Ids de categorías a pintar en el menú de MUJER.",
+      arrayEditor(s.categoryIdsSRO, () => renderOutput(), "Ej: 2026572")));
+    card.append(field("categoryIdsCRO (categorías de HOMBRE)", "Ids de categorías a pintar en el menú de HOMBRE.",
+      arrayEditor(s.categoryIdsCRO, () => renderOutput(), "Ej: 2026573")));
+  }
+
+  // category -> categoryId raíz (fuera de queryParams)
+  if (s.source === "category") {
+    card.append(el("div", { class: "help" }, "El source “category” usa categoryId FUERA de queryParams (no lleva queryParams). La sección se decide con la lógica de sectionName."));
+    const w = el("input", { type: "text", value: s.categoryIdRoot.WOMAN, placeholder: "Categoría WOMAN", oninput: e => { s.categoryIdRoot.WOMAN = e.target.value; renderOutput(); } });
+    const mn = el("input", { type: "text", value: s.categoryIdRoot.MAN, placeholder: "Categoría MAN", oninput: e => { s.categoryIdRoot.MAN = e.target.value; renderOutput(); } });
+    card.append(el("div", { class: "row" },
+      field("categoryId · WOMAN", "", w),
+      field("categoryId · MAN", "", mn),
+    ));
+  }
+
+  // queryParams (no para category)
+  if (s.source !== "category") {
+    if (meta && !meta.api && !["yodaCategories"].includes(s.source)) {
+      // sources sin API: queryParams opcional
+    }
+    const qpToggle = el("select", { onchange: e => { s.useQueryParams = e.target.value === "true"; renderModules(); } },
+      el("option", { value: "false" }, "No incluir queryParams"),
+      el("option", { value: "true" }, "Incluir queryParams"));
+    qpToggle.value = String(s.useQueryParams);
+    card.append(field("¿Esta fuente hace petición a la API?", "Las fuentes yoda* necesitan API y por tanto queryParams.", qpToggle));
+    if (s.useQueryParams) card.append(renderQueryParams(s));
+  }
+
+  return card;
+}
+
+function renderQueryParams(s) {
+  const qp = s.qp;
+  const wrap = el("div", { class: "qp-card" });
+  wrap.append(el("div", { class: "grp-title" }, "queryParams (parámetros para la API)"));
+
+  const rm = el("select", { onchange: e => { qp.recommendationModel = e.target.value; renderOutput(); } }, ...optionEls(RECOMMENDATION_MODELS, qp.recommendationModel, true, "— por defecto (yoda) —"));
+  const pl = el("input", { type: "number", min: "0", value: qp.productLimit, placeholder: "= size", oninput: e => { qp.productLimit = e.target.value === "" ? "" : +e.target.value; renderOutput(); } });
+  wrap.append(el("div", { class: "row" },
+    field("recommendationModel", "Por defecto: yoda", rm),
+    field("productLimit", "Suele coincidir con size.", pl),
+  ));
+
+  const strat = el("input", { type: "text", value: qp.strategy, placeholder: "Ej: FBT, OYML, RELATED", list: "strategyList", oninput: e => { qp.strategy = e.target.value; renderOutput(); } });
+  const pf = el("select", { onchange: e => { qp.priceType = e.target.value; renderOutput(); } }, ...optionEls(PRICE_FILTERS, qp.priceType, true, "— both (sin especificar) —"));
+  wrap.append(el("div", { class: "row" },
+    field("strategy", "Relacionada con el source.", strat),
+    field("priceType", "fullPrice / sales / both", pf),
+  ));
+
+  const camp = el("input", { type: "text", value: qp.campaign, placeholder: "Ej: V2024", oninput: e => { qp.campaign = e.target.value; renderOutput(); } });
+  wrap.append(field("campaign", "Campaña fija para filtrar (opcional).", camp));
+
+  wrap.append(field("familyName (fijo)", "Familias fijas para filtrar. Ej: CAMISA, CALCETIN.",
+    arrayEditor(qp.familyName, () => renderOutput(), "Ej: CAMISA")));
+
+  // categoryId fijo dentro de queryParams
+  const catToggle = el("select", { onchange: e => { qp.useCategoryId = e.target.value === "true"; renderModules(); } },
+    el("option", { value: "false" }, "No incluir"),
+    el("option", { value: "true" }, "Incluir categoryId fijo (por sección)"));
+  catToggle.value = String(qp.useCategoryId);
+  wrap.append(field("categoryId fijo (por género)", "Solo si la categoría es FIJA. Si es variable, inclúyela en otherParams.", catToggle));
+  if (qp.useCategoryId) {
+    const w = el("input", { type: "text", value: qp.categoryId.WOMAN, placeholder: "Categoría WOMAN", oninput: e => { qp.categoryId.WOMAN = e.target.value; renderOutput(); } });
+    const mn = el("input", { type: "text", value: qp.categoryId.MAN, placeholder: "Categoría MAN", oninput: e => { qp.categoryId.MAN = e.target.value; renderOutput(); } });
+    wrap.append(el("div", { class: "row" },
+      field("categoryId · WOMAN", "", w),
+      field("categoryId · MAN", "", mn),
+    ));
+  }
+
+  wrap.append(field("otherParams (variables con lógica)", "Variables que resuelve la frontal en cada caso de uso (valores dinámicos).",
+    multiCheck(OTHER_PARAMS, qp.otherParams, () => renderOutput())));
+
+  return wrap;
+}
+
+function move(arr, idx, dir) {
+  const ni = idx + dir;
+  if (ni < 0 || ni >= arr.length) return;
+  [arr[idx], arr[ni]] = [arr[ni], arr[idx]];
+  reindex(arr);
+  renderModules();
+}
+function reindex(arr) { arr.forEach((m, i) => { if (m.position === undefined || m._autoPos !== false) m.position = i; }); }
+
+/* ============================================================
+   SALIDA JSON
+   ============================================================ */
+
+function buildModuleJSON(m) {
+  const o = { position: m.position, type: m.type };
+  if (m.title && m.title.trim()) o.title = m.title.trim(); else o.title = null;
+  if (m.subtitle && m.subtitle.trim()) o.subtitle = m.subtitle.trim();
+
+  if (!["tabCarrousel", "moreInfo"].includes(m.type) && m.xmediaLocation !== null && m.xmediaLocation !== "") {
+    o.xmediaLocation = m.xmediaLocation;
+  }
+
+  // layoutProperties (array con 1 objeto)
+  if (m.useLayout) {
+    const lp = {};
+    LAYOUT_BOOL_PROPS.forEach(p => { lp[p.k] = !!m.layout[p.k]; });
+    if (state.platform === "web" && m.layout.columns !== "" && m.layout.columns !== null && m.layout.columns !== undefined) {
+      lp.columns = m.layout.columns;
+    }
+    o.layoutProperties = [lp];
+  }
+
+  if (m.type === "moreInfo") {
+    o.sourceList = [];
+  } else {
+    o.sourceList = m.sourceList.map(buildSourceJSON);
+  }
+
+  if (m.analyticsList && m.analyticsList.trim()) {
+    o.analyticsZenit = { list: m.analyticsList.trim() };
+  }
+  return o;
+}
+
+function buildSourceJSON(s) {
+  const o = { source: s.source, size: s.size };
+  if (s.source === "categoriesManual") {
+    if (s.categoryIdsSRO.length) o.categoryIdsSRO = [...s.categoryIdsSRO];
+    if (s.categoryIdsCRO.length) o.categoryIdsCRO = [...s.categoryIdsCRO];
+  }
+  if (s.source === "category") {
+    const c = {};
+    if (s.categoryIdRoot.WOMAN) c.WOMAN = s.categoryIdRoot.WOMAN;
+    if (s.categoryIdRoot.MAN) c.MAN = s.categoryIdRoot.MAN;
+    if (Object.keys(c).length) o.categoryId = c;
+  }
+  o.viewMoreEnabled = !!s.viewMoreEnabled;
+  if (s.placement) o.placement = s.placement;
+  if (s.source !== "category" && s.useQueryParams) {
+    const qp = buildQueryParamsJSON(s.qp);
+    if (Object.keys(qp).length) o.queryParams = qp;
+  }
+  return o;
+}
+
+function buildQueryParamsJSON(qp) {
+  const o = {};
+  if (qp.recommendationModel) o.recommendationModel = qp.recommendationModel;
+  if (qp.productLimit !== "" && qp.productLimit !== null && qp.productLimit !== undefined) o.productLimit = qp.productLimit;
+  if (qp.strategy) o.strategy = qp.strategy;
+  if (qp.priceType) o.priceType = qp.priceType;
+  if (qp.campaign) o.campaign = qp.campaign;
+  if (qp.familyName.length) o.familyName = [...qp.familyName];
+  if (qp.useCategoryId) {
+    const c = {};
+    if (qp.categoryId.WOMAN) c.WOMAN = qp.categoryId.WOMAN;
+    if (qp.categoryId.MAN) c.MAN = qp.categoryId.MAN;
+    if (Object.keys(c).length) o.categoryId = c;
+  }
+  if (qp.otherParams.length) o.otherParams = [...qp.otherParams];
+  return o;
+}
+
+function buildFullJSON() {
+  if (state.platform === "app") {
+    return { modules: state.app.map(buildModuleJSON) };
+  }
+  // web -> { platforms: { desktop: {modules}, mobile: {modules} } }
+  return {
+    platforms: {
+      desktop: { modules: state.web.desktop.map(buildModuleJSON) },
+      mobile: { modules: state.web.mobile.map(buildModuleJSON) },
+    }
+  };
+}
+
+/* validación ligera */
+function validate() {
+  const issues = [];
+  const modsToCheck = state.platform === "app"
+    ? [["", state.app]]
+    : [["mobile", state.web.mobile], ["desktop", state.web.desktop]];
+  for (const [label, mods] of modsToCheck) {
+    const prefix = label ? `[${label}] ` : "";
+    mods.forEach((m, i) => {
+      const tag = `${prefix}Módulo ${i + 1} (${m.type})`;
+      if (m.type !== "moreInfo" && !m.sourceList.length)
+        issues.push({ type: "warn", msg: `${tag}: no tiene ninguna fuente de información.` });
+      m.sourceList.forEach((s, si) => {
+        const sm = SOURCES.find(x => x.v === s.source);
+        if (sm && sm.api && !s.useQueryParams)
+          issues.push({ type: "warn", msg: `${tag} · fuente ${si + 1} (${s.source}): necesita API pero no tiene queryParams.` });
+        if (s.source === "categoriesManual" && !s.categoryIdsSRO.length && !s.categoryIdsCRO.length)
+          issues.push({ type: "err", msg: `${tag} · fuente ${si + 1}: categoriesManual sin categoryIdsSRO ni categoryIdsCRO.` });
+        if (s.source === "category" && !s.categoryIdRoot.WOMAN && !s.categoryIdRoot.MAN)
+          issues.push({ type: "err", msg: `${tag} · fuente ${si + 1}: category sin categoryId (WOMAN/MAN).` });
+        if (s.size <= 0)
+          issues.push({ type: "warn", msg: `${tag} · fuente ${si + 1}: size es 0.` });
+      });
+    });
+  }
+  return issues;
+}
+
+function syntaxHighlight(json) {
+  json = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+    let cls = "n";
+    if (/^"/.test(match)) cls = /:$/.test(match) ? "k" : "s";
+    else if (/true|false|null/.test(match)) cls = "b";
+    return `<span class="${cls}">${match}</span>`;
+  });
+}
+
+let dbTimer;
+function renderOutputDebounced() { clearTimeout(dbTimer); dbTimer = setTimeout(renderOutput, 150); }
+
+function renderOutput() {
+  const json = buildFullJSON();
+  const str = JSON.stringify(json, null, 2);
+  $("#jsonOut").innerHTML = syntaxHighlight(str);
+
+  const issues = validate();
+  const errs = issues.filter(i => i.type === "err");
+  const box = $("#validationBox");
+  box.innerHTML = "";
+  issues.forEach(i => box.append(el("div", { class: "v-item " + (i.type === "err" ? "v-err" : "v-warn") }, (i.type === "err" ? "⛔ " : "⚠️ ") + i.msg)));
+  const status = $("#validStatus");
+  if (errs.length) { status.className = "pill err"; status.textContent = errs.length + " error(es)"; }
+  else { status.className = "pill ok"; status.textContent = "Válido"; }
+
+  const count = state.platform === "app"
+    ? state.app.length + " módulo(s)"
+    : state.web.mobile.length + " mobile · " + state.web.desktop.length + " desktop";
+  $("#moduleCount").textContent = count;
+}
+
+/* ============================================================
+   CASOS DE USO (plantillas)
+   ============================================================ */
+
+function moduleFromUseCase(uc) {
+  const p = uc.module;
+  const m = newModule({ type: p.type, title: p.title || "", subtitle: p.subtitle || "" });
+  m.position = currentModules().length;
+  if (p.noXmedia) m.xmediaLocation = null;
+  if (p.analyticsList) m.analyticsList = p.analyticsList;
+  if (p.layout) { m.useLayout = true; m.layout = newLayout(p.layout); }
+  if (!p.noSource) {
+    const sm = SOURCES.find(x => x.v === p.source) || {};
+    const s = newSource({
+      source: p.source,
+      size: p.size ?? 12,
+      placement: p.placement ?? "",
+    });
+    s.useQueryParams = !!sm.api;
+    if (p.categoriesManual) { s.source = "categoriesManual"; s.useQueryParams = false; }
+    if (p.useCategoryIdRoot) { s.source = "category"; s.useCategoryIdRoot = true; s.useQueryParams = false; }
+    if (sm.strategy) s.qp.strategy = sm.strategy;
+    if (p.strategy) s.qp.strategy = p.strategy;
+    if (p.other) s.qp.otherParams = [...p.other];
+    if (p.other && p.other.length && !sm.api) s.useQueryParams = true;
+    m.sourceList = [s];
+  }
+  return m;
+}
+
+function openUseCaseModal() {
+  const body = $("#ucModalBody");
+  body.innerHTML = "";
+  let lastGroup = "";
+  USE_CASES.forEach(uc => {
+    if (uc.group !== lastGroup) { body.append(el("div", { class: "grp-title" }, uc.group)); lastGroup = uc.group; }
+    body.append(el("div", { class: "uc-pick", onclick: () => {
+      const m = moduleFromUseCase(uc);
+      currentModules().push(m);
+      $("#ucModal").classList.remove("show");
+      renderModules();
+    } }, el("h4", {}, uc.name), el("p", {}, uc.desc)));
+  });
+  $("#ucModal").classList.add("show");
+}
+
+function renderUcGuide() {
+  const box = $("#ucGuide");
+  box.innerHTML = "";
+  let lastGroup = "";
+  USE_CASES.forEach(uc => {
+    if (uc.group !== lastGroup) { box.append(el("div", { class: "grp-title" }, uc.group)); lastGroup = uc.group; }
+    box.append(el("details", { class: "usecase" },
+      el("summary", {}, uc.name),
+      el("div", { class: "uc-body" },
+        el("p", {}, uc.desc),
+        el("p", {}, "Tipo sugerido: ", el("b", {}, uc.module.type),
+          uc.module.source ? [" · Source: ", el("b", {}, uc.module.source)] : "")
+      )
+    ));
+  });
+}
+
+/* ============================================================
+   IMPORTAR JSON
+   ============================================================ */
+
+function importJSON(data) {
+  try {
+    const parseModule = (mo) => {
+      const m = newModule({ type: mo.type, title: mo.title ?? "", subtitle: mo.subtitle ?? "" });
+      m.position = mo.position ?? 0;
+      m.xmediaLocation = mo.xmediaLocation ?? null;
+      m.analyticsList = (mo.analyticsZenit && mo.analyticsZenit.list) || "";
+      if (Array.isArray(mo.layoutProperties) && mo.layoutProperties[0]) {
+        m.useLayout = true;
+        m.layout = newLayout(mo.layoutProperties[0]);
+      }
+      m.sourceList = (mo.sourceList || []).map(so => {
+        const s = newSource({
+          source: so.source, size: so.size ?? 12, placement: so.placement ?? "",
+          viewMoreEnabled: !!so.viewMoreEnabled,
+          categoryIdsSRO: so.categoryIdsSRO || [], categoryIdsCRO: so.categoryIdsCRO || [],
+        });
+        if (so.source === "category" && so.categoryId) { s.useCategoryIdRoot = true; s.categoryIdRoot = { WOMAN: so.categoryId.WOMAN || "", MAN: so.categoryId.MAN || "" }; }
+        if (so.queryParams) {
+          s.useQueryParams = true;
+          const q = so.queryParams;
+          s.qp = newQueryParams({
+            recommendationModel: q.recommendationModel ?? "",
+            productLimit: q.productLimit ?? "",
+            strategy: q.strategy ?? "",
+            priceType: q.priceType ?? q.priceFilter ?? "",
+            campaign: q.campaign ?? "",
+            familyName: q.familyName || [],
+            otherParams: (q.otherParams || []).map(p => p === "priceFilter" ? "priceType" : p),
+          });
+          if (q.categoryId) { s.qp.useCategoryId = true; s.qp.categoryId = { WOMAN: q.categoryId.WOMAN || "", MAN: q.categoryId.MAN || "" }; }
+        } else { s.useQueryParams = false; }
+        return s;
+      });
+      return m;
+    };
+    if (data.platforms && (data.platforms.mobile || data.platforms.desktop)) {
+      state.platform = "web";
+      state.web.mobile = ((data.platforms.mobile && data.platforms.mobile.modules) || []).map(parseModule);
+      state.web.desktop = ((data.platforms.desktop && data.platforms.desktop.modules) || []).map(parseModule);
+    } else if (Array.isArray(data.modules)) {
+      state.platform = "app";
+      state.app = data.modules.map(parseModule);
+    } else if (data.mobile || data.desktop) {
+      // compatibilidad con formato plano antiguo
+      state.platform = "web";
+      state.web.mobile = (data.mobile || []).map(parseModule);
+      state.web.desktop = (data.desktop || []).map(parseModule);
+    } else { alert("El JSON no tiene 'modules' ni 'platforms.mobile/desktop'."); return; }
+    syncPlatformUI();
+    renderModules();
+  } catch (e) {
+    alert("No se pudo importar: " + e.message);
+  }
+}
+
+/* ============================================================
+   UI WIRING
+   ============================================================ */
+
+function syncPlatformUI() {
+  $$("#platformSeg button").forEach(b => b.classList.toggle("active", b.dataset.plat === state.platform));
+  $("#webTabs").style.display = state.platform === "web" ? "block" : "none";
+  $$("#webViewSeg button").forEach(b => b.classList.toggle("active", b.dataset.view === state.webView));
+}
+
+function init() {
+  $$("#platformSeg button").forEach(b => b.addEventListener("click", () => {
+    state.platform = b.dataset.plat; syncPlatformUI(); renderModules();
+  }));
+  $$("#webViewSeg button").forEach(b => b.addEventListener("click", () => {
+    state.webView = b.dataset.view; syncPlatformUI(); renderModules();
+  }));
+  $("#btnAddModule").addEventListener("click", () => {
+    const m = newModule(); m.position = currentModules().length; m.sourceList = [newSource()];
+    currentModules().push(m); renderModules();
+  });
+  $("#btnUseCase").addEventListener("click", openUseCaseModal);
+  $("#ucClose").addEventListener("click", () => $("#ucModal").classList.remove("show"));
+  $("#ucModal").addEventListener("click", (e) => { if (e.target.id === "ucModal") $("#ucModal").classList.remove("show"); });
+
+  $("#btnReset").addEventListener("click", () => {
+    if (!confirm("¿Borrar toda la configuración actual?")) return;
+    state = { platform: "app", webView: "mobile", app: [], web: { mobile: [], desktop: [] } };
+    syncPlatformUI(); renderModules();
+  });
+
+  $("#btnCopy").addEventListener("click", async () => {
+    const str = JSON.stringify(buildFullJSON(), null, 2);
+    try { await navigator.clipboard.writeText(str); $("#btnCopy").textContent = "¡Copiado!"; setTimeout(() => $("#btnCopy").textContent = "Copiar", 1200); }
+    catch { alert("No se pudo copiar. Copia manualmente."); }
+  });
+  $("#btnDownload").addEventListener("click", () => {
+    const str = JSON.stringify(buildFullJSON(), null, 2);
+    const blob = new Blob([str], { type: "application/json" });
+    const a = el("a", { href: URL.createObjectURL(blob), download: "config-recomendaciones.json" });
+    document.body.append(a); a.click(); a.remove();
+  });
+
+  $("#btnImport").addEventListener("click", () => $("#fileImport").click());
+  $("#fileImport").addEventListener("change", (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { try { importJSON(JSON.parse(r.result)); } catch (err) { alert("JSON inválido: " + err.message); } };
+    r.readAsText(f);
+    e.target.value = "";
+  });
+
+  renderUcGuide();
+  syncPlatformUI();
+  renderModules();
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
