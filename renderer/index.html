@@ -30,6 +30,15 @@
   function track(event, props) {
     try { if (window.posthog && typeof window.posthog.capture === "function") window.posthog.capture(event, props || {}); } catch (e) {}
   }
+  // Tiempo (segundos) desde que cargó la página hasta el primer JSON generado.
+  // Solo se incluye la primera vez; en generaciones posteriores devuelve {}.
+  window.__appStart = Date.now();
+  window.__primerJSON = false;
+  function tiempoAlPrimerJSON() {
+    if (window.__primerJSON) return {};
+    window.__primerJSON = true;
+    return { es_primer_json: true, segundos_hasta_primer_json: Math.round((Date.now() - window.__appStart) / 1000) };
+  }
   // Reporte de errores a PostHog (sin dependencias extra). Seguro si PostHog no cargó.
   function reportError(err, extra) {
     try {
@@ -670,7 +679,7 @@ function renderModuleCard(m, idx, mods) {
     el("span", { class: "spacer", style: "flex:1" }),
     el("button", { class: "subtle tiny", type: "button", title: "Subir", onclick: (e) => { e.stopPropagation(); move(mods, idx, -1); } }, "↑"),
     el("button", { class: "subtle tiny", type: "button", title: "Bajar", onclick: (e) => { e.stopPropagation(); move(mods, idx, 1); } }, "↓"),
-    el("button", { class: "danger tiny", type: "button", onclick: (e) => { e.stopPropagation(); mods.splice(idx, 1); reindex(mods); renderModules(); } }, "Eliminar"),
+    el("button", { class: "danger tiny", type: "button", onclick: (e) => { e.stopPropagation(); const tipo = m.type; mods.splice(idx, 1); reindex(mods); renderModules(); track("modulo_eliminado", { tipo: tipo, plataforma: state.platform, total_modulos: mods.length }); } }, "Eliminar"),
     el("span", { class: "arrow" }, "▾"),
   );
   head.addEventListener("click", () => { m._collapsed = !m._collapsed; renderModules(); });
@@ -968,6 +977,51 @@ function countModules(json) {
   return 0;
 }
 
+/* todos los módulos del JSON, sin importar plataforma (para analítica) */
+function allModulesOf(json) {
+  if (json && Array.isArray(json.modules)) return json.modules;
+  if (json && json.platforms) {
+    return []
+      .concat((json.platforms.desktop && json.platforms.desktop.modules) || [])
+      .concat((json.platforms.mobile && json.platforms.mobile.modules) || []);
+  }
+  return [];
+}
+
+/* resumen estadístico de la configuración, listo para enviar como props a PostHog.
+   Aplana datos (PostHog prefiere props planas) para poder filtrar/agrupar en la UI. */
+function summarizeConfig(json) {
+  const mods = allModulesOf(json);
+  const tiposCount = {};
+  const fuentesCount = {};
+  let totalFuentes = 0, conLayout = 0, conAnalytics = 0;
+  mods.forEach(m => {
+    if (m.type) tiposCount[m.type] = (tiposCount[m.type] || 0) + 1;
+    if (Array.isArray(m.layoutProperties) && m.layoutProperties.length) conLayout++;
+    if (m.analyticsZenit && m.analyticsZenit.list) conAnalytics++;
+    (m.sourceList || []).forEach(s => {
+      totalFuentes++;
+      if (s.source) fuentesCount[s.source] = (fuentesCount[s.source] || 0) + 1;
+    });
+  });
+  const tiposUnicos = Object.keys(tiposCount);
+  const fuentesUnicas = Object.keys(fuentesCount);
+  const issues = validate();
+  return {
+    plataforma: state.platform,
+    num_modulos: mods.length,
+    num_fuentes: totalFuentes,
+    tipos_modulo: tiposUnicos,                  // lista de tipos usados
+    tipo_modulo_principal: tiposUnicos.sort((a, b) => tiposCount[b] - tiposCount[a])[0] || null,
+    fuentes_usadas: fuentesUnicas,              // lista de fuentes usadas
+    modulos_con_layout: conLayout,
+    modulos_con_analytics: conAnalytics,
+    validacion_errores: issues.filter(i => i.type === "err").length,
+    validacion_avisos: issues.filter(i => i.type === "warn").length,
+    validacion_ok: issues.filter(i => i.type === "err").length === 0
+  };
+}
+
 /* validación ligera */
 function validate() {
   const issues = [];
@@ -1071,6 +1125,7 @@ function openUseCaseModal() {
       $("#ucModal").classList.remove("show");
       renderModules();
       track("caso_uso_seleccionado", { caso: uc.name, grupo: uc.group, plataforma: state.platform });
+      track("modulo_anadido", { metodo: "caso_uso", caso: uc.name, plataforma: state.platform, total_modulos: currentModules().length });
     } }, el("h4", {}, uc.name), el("p", {}, uc.desc)));
   });
   $("#ucModal").classList.add("show");
@@ -1176,8 +1231,9 @@ function init() {
   $("#btnAddModule").addEventListener("click", () => {
     const m = newModule(); m.position = currentModules().length; m.sourceList = [newSource()];
     currentModules().push(m); renderModules();
+    track("modulo_anadido", { metodo: "vacio", plataforma: state.platform, total_modulos: currentModules().length });
   });
-  $("#btnUseCase").addEventListener("click", openUseCaseModal);
+  $("#btnUseCase").addEventListener("click", () => { track("modal_caso_uso_abierto", { plataforma: state.platform }); openUseCaseModal(); });
   $("#ucClose").addEventListener("click", () => $("#ucModal").classList.remove("show"));
   $("#ucModal").addEventListener("click", (e) => { if (e.target.id === "ucModal") $("#ucModal").classList.remove("show"); });
 
@@ -1191,14 +1247,14 @@ function init() {
   $("#btnCopy").addEventListener("click", async () => {
     const json = buildFullJSON();
     const str = JSON.stringify(json, null, 2);
-    track("json_generado", { metodo: "copiar", plataforma: state.platform, num_modulos: countModules(json) });
+    track("json_generado", Object.assign({ metodo: "copiar" }, summarizeConfig(json), tiempoAlPrimerJSON()));
     try { await navigator.clipboard.writeText(str); $("#btnCopy").textContent = "¡Copiado!"; setTimeout(() => $("#btnCopy").textContent = "Copiar", 1200); }
     catch { alert("No se pudo copiar. Copia manualmente."); }
   });
   $("#btnDownload").addEventListener("click", () => {
     const json = buildFullJSON();
     const str = JSON.stringify(json, null, 2);
-    track("json_generado", { metodo: "descargar", plataforma: state.platform, num_modulos: countModules(json) });
+    track("json_generado", Object.assign({ metodo: "descargar" }, summarizeConfig(json), tiempoAlPrimerJSON()));
     const blob = new Blob([str], { type: "application/json" });
     const a = el("a", { href: URL.createObjectURL(blob), download: "config-recomendaciones.json" });
     document.body.append(a); a.click(); a.remove();
@@ -1219,6 +1275,9 @@ function init() {
   renderUcGuide();
   syncPlatformUI();
   renderModules();
+
+  // Entorno: distingue uso en web vs app de escritorio (Electron).
+  track("app_iniciada", { entorno: (location.protocol === "file:" ? "app_escritorio" : "web"), plataforma_inicial: state.platform });
 }
 
 document.addEventListener("DOMContentLoaded", init);

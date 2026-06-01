@@ -25,9 +25,7 @@ en el dock/escritorio. Descargas en la sección **Releases** del repo.
 > vez hay que abrirla con **clic derecho → Abrir** (o Ajustes del Sistema →
 > Privacidad y Seguridad → "Abrir de todos modos"). Por eso se recomienda la web.
 
-## Estructura
-
-```
+## Estructura```
 .
 ├── renderer/index.html      # El panel (la UI). Editar aquí para cambiar el panel.
 ├── main.js                  # Proceso principal de Electron (ventana, menú).
@@ -37,12 +35,20 @@ en el dock/escritorio. Descargas en la sección **Releases** del repo.
 └── .github/workflows/
     ├── build.yml            # CI: compila apps Mac+Win y publica Release.
     └── deploy-web.yml       # CI: publica la web en GitHub Pages.
-└── .github/workflows/build.yml  # CI: compila Mac+Win y publica Release.
 ```
 
 > El panel completo vive en `renderer/index.html`. Para cambiar la UI o la lógica
 > del panel, edita ese archivo. Puedes abrirlo directamente en el navegador
 > (doble clic) para probar sin Electron.
+
+## Analítica y error tracking (PostHog)
+
+El panel envía analítica de uso y errores a **PostHog** (instancia UE), solo cuando
+se sirve por web (en la app de escritorio queda inerte a propósito).
+
+**Importante para quien toque el código:** todo cambio de funcionalidad debe incluir
+su tracking. La convención completa (helpers `track()` / `reportError()`, nombrado de
+eventos y lista de eventos actuales) está en **`AGENTS.md`**.
 
 
 ## Requisitos
