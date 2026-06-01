@@ -175,6 +175,32 @@
   mark.good { background: rgba(61,220,151,.16); color: var(--up); }
   mark.bad { background: rgba(255,107,129,.16); color: var(--down); }
 
+  /* Marketing: split pagado/propio */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 32px; }
+  .split .card {
+    border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px;
+    background: linear-gradient(165deg, var(--panel), var(--bg2)); position: relative; overflow: hidden;
+  }
+  .split .card::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+  }
+  .split .paid::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .split .own::before { background: linear-gradient(90deg, var(--up), #36c2a8); }
+  .split .k { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .split .v { font-size: 34px; font-weight: 700; letter-spacing: -.02em; margin: 10px 0 2px; }
+  .split .d { font-size: 13px; color: var(--soft); }
+
+  /* badges de acción */
+  .act { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 100px; white-space: nowrap; display: inline-block; }
+  .act.up { color: var(--up); background: rgba(61,220,151,.12); border: 1px solid rgba(61,220,151,.3); }
+  .act.keep { color: var(--accent); background: rgba(108,140,255,.12); border: 1px solid rgba(108,140,255,.3); }
+  .act.fix { color: #ffce5c; background: rgba(255,206,92,.12); border: 1px solid rgba(255,206,92,.3); }
+  .act.cut { color: var(--down); background: rgba(255,107,129,.12); border: 1px solid rgba(255,107,129,.3); }
+  td .act { margin: 0; }
+  .pill-pago { font-size: 10px; color: var(--accent2); border: 1px solid rgba(176,108,255,.35);
+    border-radius: 100px; padding: 2px 7px; margin-left: 8px; vertical-align: middle; }
+
   footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 28px; }
 
   @media (max-width: 640px) {
@@ -182,6 +208,7 @@
     .lead { font-size: 16px; }
     .notes li { grid-template-columns: 1fr; gap: 10px; }
     .notes .tag { justify-self: start; }
+    .split { grid-template-columns: 1fr; }
     .exec-row { grid-template-columns: 1fr; gap: 8px; }
     th, td { padding: 12px 12px; font-size: 12px; }
     .scroll { overflow-x: auto; }
@@ -196,7 +223,8 @@
     <h1>Cómo nos fue en la web de Pull&amp;Bear</h1>
     <p class="lead">
       Un resumen sencillo de cómo se comportó nuestra tienda online en los primeros meses
-      del año: cuánta gente nos visitó, cuántos compraron y cuánto vendimos. Comparado
+      del año: cuánta gente nos visitó, cuántos compraron y cuánto vendimos. Incluye un bloque
+      específico para <strong>Marketing</strong> con el rendimiento de cada canal de venta. Comparado
       siempre con el mismo periodo del año pasado.
     </p>
     <p class="meta">
@@ -319,6 +347,67 @@
       <li><span class="tag alert">A revisar</span><p>Los <strong>anuncios en redes sociales</strong> traen bastante gente, pero pocos compran (<mark class="bad">solo 2,4 de cada 100</mark>). Conviene revisar qué anuncios estamos enseñando y a quién.</p></li>
       <li><span class="tag alert">Flojo</span><p>Los <strong>SMS</strong> son la vía que peor funciona: traen poca gente y casi nadie compra.</p></li>
     </ul>
+  </section>
+
+  <!-- Marketing -->
+  <section>
+    <div class="sec-title">Para el equipo de Marketing · Canales de venta</div>
+    <p class="sec-sub">Foco en lo accionable: qué canales pagamos, cuánto rinden y dónde mover el presupuesto. Separamos lo que se consigue <strong>pagando publicidad</strong> de lo que llega por <strong>canales propios</strong> (web directa, email, push, SEO…).</p>
+
+    <div class="split">
+      <div class="card paid">
+        <div class="k">Tráfico de pago</div>
+        <div class="v">16,7%</div>
+        <div class="d">Anuncios en buscadores + redes sociales. <strong>29,5 M de visitas</strong> y el <strong>13,8% de las compras</strong>. Es la única palanca que escala con presupuesto.</div>
+      </div>
+      <div class="card own">
+        <div class="k">Canales propios y orgánicos</div>
+        <div class="v">83,3%</div>
+        <div class="d">Web directa, SEO, email, push, SMS, redes orgánicas y afiliados. <strong>86,2% de las compras</strong> sin coste de medios directo: la base del negocio.</div>
+      </div>
+    </div>
+
+    <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Canal</th>
+          <th title="Tipo de canal">Tipo</th>
+          <th title="Visitas que trae el canal">Visitas</th>
+          <th title="Pedidos atribuidos al canal (estimado a partir del % de compras)">Pedidos aprox.</th>
+          <th title="De cada 100 visitas, cuántas compran">Conversión</th>
+          <th title="Recomendación de Marketing para el canal">Acción sugerida</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Anuncios en buscadores <span class="pill-pago">pago</span></td><td>SEM</td><td>16.606.242</td><td>~637.000</td><td>3,8%</td><td><span class="act keep">Mantener</span></td></tr>
+        <tr><td>Anuncios en redes sociales <span class="pill-pago">pago</span></td><td>Paid Social</td><td>12.861.403</td><td>~308.000</td><td><mark class="bad">2,4%</mark></td><td><span class="act fix">Optimizar</span></td></tr>
+        <tr><td>Avisos en el móvil (promos)</td><td>Push</td><td>9.597.765</td><td>~356.000</td><td>3,7%</td><td><span class="act up">Escalar</span></td></tr>
+        <tr><td>Avisos en el móvil (pedido)</td><td>Push</td><td>4.385.004</td><td>~240.000</td><td><mark class="good">5,4%</mark></td><td><span class="act up">Escalar</span></td></tr>
+        <tr><td>Newsletter por email</td><td>CRM</td><td>2.251.229</td><td>~82.000</td><td>3,7%</td><td><span class="act up">Escalar</span></td></tr>
+        <tr><td>Email de pedidos</td><td>CRM</td><td>6.371.169</td><td>~260.000</td><td>4,1%</td><td><span class="act keep">Mantener</span></td></tr>
+        <tr><td>Webs colaboradoras</td><td>Afiliados</td><td>3.364.226</td><td>~123.000</td><td>3,8%</td><td><span class="act keep">Mantener</span></td></tr>
+        <tr><td>Redes sociales (orgánico)</td><td>Social</td><td>3.927.691</td><td>~123.000</td><td>3,1%</td><td><span class="act fix">Optimizar</span></td></tr>
+        <tr><td>Mensajes SMS</td><td>CRM</td><td>1.982.324</td><td>~34.000</td><td><mark class="bad">1,6%</mark></td><td><span class="act cut">Recortar</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="sec-sub" style="margin-top:14px; font-size:13px;">Los pedidos aproximados se estiman repartiendo los 6,85 M de pedidos según el % de compras de cada canal. Sirven para priorizar, no como cifra contable exacta.</p>
+
+    <ul class="notes">
+      <li><span class="tag alert">Prioridad 1</span><p><strong>Paid Social</strong> es nuestro principal foco de mejora: se lleva inversión y mucho tráfico, pero convierte la mitad que la media (<mark class="bad">2,4%</mark> vs 3,9%). Revisar audiencias, creatividades y página de destino antes de subir presupuesto. <span class="act fix">Optimizar</span></p></li>
+      <li><span class="tag good">Prioridad 2</span><p>El <strong>push</strong> (avisos en el móvil) es el canal propio más eficiente, con el de pedido convirtiendo al <mark class="good">5,4%</mark>. Aumentar frecuencia y segmentación: crecimiento casi sin coste de medios. <span class="act up">Escalar</span></p></li>
+      <li><span class="tag good">Quick win</span><p><strong>Email y CRM</strong> convierten por encima de la media (3,7–4,1%) con volumen bajo. Más campañas segmentadas = ventas incrementales baratas. <span class="act up">Escalar</span></p></li>
+      <li><span class="tag good">Sostener</span><p><strong>SEM y afiliados</strong> rinden en línea con la media (3,8%). Mantener presupuesto y vigilar el coste por clic, que sube. <span class="act keep">Mantener</span></p></li>
+      <li><span class="tag alert">Recortar</span><p><strong>SMS</strong> convierte al <mark class="bad">1,6%</mark> y aporta solo el 0,5% de las compras. Pausar o reservarlo a avisos críticos y reinvertir ese esfuerzo en push/email. <span class="act cut">Recortar</span></p></li>
+    </ul>
+
+    <p class="callout">
+      <strong>Mensaje para Marketing:</strong> el <mark>83%</mark> de las ventas viene de canales propios, así que
+      cada euro invertido en <strong>push, email y CRM</strong> rinde mucho y casi sin coste de medios.
+      En pago, el dinero está mejor en <strong>buscadores</strong> que en <strong>redes sociales</strong> hasta
+      arreglar la conversión de Paid Social. Y ojo con <strong>Francia</strong>: es donde la publicidad menos rinde (<mark class="bad">6,3 €</mark> por euro).
+    </p>
   </section>
 
   <!-- Mercados -->
