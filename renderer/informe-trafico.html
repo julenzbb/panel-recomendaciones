@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cómo nos fue en la web · Pull&Bear</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg2: #11141c;
+    --panel: #151a24;
+    --panel2: #1a2030;
+    --fg: #f2f5fb;
+    --muted: #7b869c;
+    --soft: #aeb7c9;
+    --line: #232a38;
+    --up: #3ddc97;
+    --down: #ff6b81;
+    --accent: #6c8cff;
+    --accent2: #b06cff;
+    --max: 1120px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -5%, rgba(108,140,255,.16), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(176,108,255,.12), transparent 55%),
+      var(--bg);
+    color: var(--fg);
+    line-height: 1.55;
+    font-size: 15px;
+    padding: 88px 32px 140px;
+  }
+  .wrap { max-width: var(--max); margin: 0 auto; }
+
+  header { margin-bottom: 80px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 20px; font-weight: 600;
+    padding: 6px 12px; border: 1px solid rgba(108,140,255,.35);
+    border-radius: 100px; background: rgba(108,140,255,.08);
+  }
+  h1 {
+    font-size: clamp(34px, 6vw, 56px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05;
+    margin-bottom: 22px;
+    background: linear-gradient(120deg, #fff 20%, #b9c6ff 70%, #d9c0ff);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .lead { font-size: 18px; color: var(--soft); max-width: 660px; margin-bottom: 24px; }
+  .meta { color: var(--muted); font-size: 13px; max-width: 660px; }
+  .meta span { color: var(--fg); }
+
+  section { margin-bottom: 88px; }
+  .sec-title {
+    font-size: 13px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--fg); margin-bottom: 8px; font-weight: 700;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sec-title::before {
+    content: ""; width: 22px; height: 3px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .sec-sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; max-width: 660px; }
+
+  /* KPI grid */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .kpi {
+    position: relative; overflow: hidden;
+    background: linear-gradient(165deg, var(--panel), var(--bg2));
+    border: 1px solid var(--line); border-radius: 16px;
+    padding: 22px 22px 24px;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .kpi::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2)); opacity: .5;
+  }
+  .kpi:hover {
+    transform: translateY(-3px); border-color: rgba(108,140,255,.5);
+    box-shadow: 0 14px 40px rgba(0,0,0,.4);
+  }
+  .kpi .label { font-size: 13px; color: var(--soft); margin-bottom: 14px; font-weight: 500; }
+  .kpi .value { font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
+  .kpi .delta { font-size: 12px; margin-top: 10px; font-weight: 600; }
+  .kpi .hint { font-size: 12px; color: var(--muted); margin-top: 12px; line-height: 1.4; }
+  .up { color: var(--up); }
+  .down { color: var(--down); }
+  .flat { color: var(--muted); }
+
+  /* Tables */
+  .scroll {
+    border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+    background: linear-gradient(165deg, var(--panel), var(--bg2));
+  }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 15px 18px; font-size: 13.5px; border-bottom: 1px solid var(--line); }
+  th {
+    color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+    background: rgba(255,255,255,.02);
+  }
+  th[title] { cursor: help; }
+  th:first-child, td:first-child { text-align: left; font-weight: 500; color: var(--fg); }
+  tbody tr { transition: background .15s ease; }
+  tbody tr:hover { background: rgba(108,140,255,.07); }
+  tbody tr:last-child td { border-bottom: none; }
+  tfoot td { font-weight: 700; border-bottom: none; border-top: 2px solid var(--accent); color: var(--fg); }
+
+  /* Insights */
+  .notes { list-style: none; display: grid; gap: 12px; }
+  .notes li {
+    padding: 18px 22px; border: 1px solid var(--line); border-radius: 14px;
+    background: var(--panel); display: grid; grid-template-columns: 120px 1fr; gap: 22px; align-items: baseline;
+  }
+  .notes .tag {
+    font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    font-weight: 700; padding: 5px 10px; border-radius: 100px;
+    border: 1px solid var(--line); text-align: center;
+  }
+  .notes .tag.alert { color: var(--down); border-color: rgba(255,107,129,.35); background: rgba(255,107,129,.08); }
+  .notes .tag.good { color: var(--up); border-color: rgba(61,220,151,.35); background: rgba(61,220,151,.08); }
+  .notes p { font-size: 14px; color: var(--soft); }
+  .notes strong { font-weight: 700; color: var(--fg); }
+
+  .callout {
+    border: 1px solid rgba(108,140,255,.3);
+    background: linear-gradient(120deg, rgba(108,140,255,.1), rgba(176,108,255,.06));
+    border-radius: 16px; padding: 22px 26px; margin: 28px 0 0;
+    font-size: 15px; color: var(--soft);
+  }
+  .callout strong { color: var(--fg); }
+
+  /* Exec summary */
+  .exec { display: grid; gap: 12px; }
+  .exec-row {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    display: grid; grid-template-columns: 210px 170px 1fr; gap: 20px; padding: 18px 24px; align-items: center;
+    transition: border-color .15s ease;
+  }
+  .exec-row:hover { border-color: rgba(108,140,255,.4); }
+  .exec-row .a { font-weight: 700; font-size: 14px; color: var(--fg); }
+  .exec-row .s { font-size: 13px; color: var(--soft); font-weight: 600; }
+  .exec-row .x { font-size: 13px; color: var(--muted); }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 9px; vertical-align: middle; }
+  .g { background: var(--up); box-shadow: 0 0 10px var(--up); }
+  .y { background: #ffce5c; box-shadow: 0 0 10px #ffce5c; }
+  .r { background: var(--down); box-shadow: 0 0 10px var(--down); }
+
+  /* Glosario */
+  details.glos {
+    border: 1px solid var(--line); border-radius: 16px; padding: 0 24px; background: var(--panel);
+  }
+  details.glos summary {
+    cursor: pointer; padding: 20px 0; font-weight: 700; font-size: 15px; color: var(--fg);
+    list-style: none; display: flex; justify-content: space-between; align-items: center;
+  }
+  details.glos summary::-webkit-details-marker { display: none; }
+  details.glos summary::after { content: "+"; color: var(--accent); font-weight: 400; font-size: 22px; }
+  details.glos[open] summary::after { content: "–"; }
+  .glos dl { padding: 0 0 22px; }
+  .glos dt { font-weight: 700; font-size: 14px; margin-top: 18px; color: var(--fg); }
+  .glos dd { color: var(--muted); font-size: 14px; margin-top: 3px; }
+
+  /* Resaltado de datos importantes dentro del texto */
+  mark {
+    background: rgba(255,206,92,.18); color: #ffd97a; padding: 1px 6px;
+    border-radius: 5px; font-weight: 700;
+  }
+  mark.good { background: rgba(61,220,151,.16); color: var(--up); }
+  mark.bad { background: rgba(255,107,129,.16); color: var(--down); }
+
+  footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 28px; }
+
+  @media (max-width: 640px) {
+    body { padding: 56px 18px 90px; }
+    .lead { font-size: 16px; }
+    .notes li { grid-template-columns: 1fr; gap: 10px; }
+    .notes .tag { justify-self: start; }
+    .exec-row { grid-template-columns: 1fr; gap: 8px; }
+    th, td { padding: 12px 12px; font-size: 12px; }
+    .scroll { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Resumen de resultados · Tienda online</div>
+    <h1>Cómo nos fue en la web de Pull&amp;Bear</h1>
+    <p class="lead">
+      Un resumen sencillo de cómo se comportó nuestra tienda online en los primeros meses
+      del año: cuánta gente nos visitó, cuántos compraron y cuánto vendimos. Comparado
+      siempre con el mismo periodo del año pasado.
+    </p>
+    <p class="meta">
+      Periodo: <span>1 de enero – 2 de junio de 2025</span> · comparado con el mismo periodo de 2024.<br>
+      Cada cifra del informe lleva una explicación. Al final hay un <span>glosario</span> con todos los términos.
+    </p>
+  </header>
+
+  <!-- KPIs -->
+  <section>
+    <div class="sec-title">Los números principales</div>
+    <p class="sec-sub">Las cifras clave del periodo. La flecha verde indica que mejoramos respecto al año pasado; la roja, que empeoramos.</p>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label">Visitas a la web</div>
+        <div class="value">175,9 millones</div>
+        <div class="delta up">▲ +1,6% vs. año pasado</div>
+        <div class="hint">Veces que alguien entró en la web.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Compras realizadas</div>
+        <div class="value">6,85 millones</div>
+        <div class="delta flat">— sin cambio reseñable</div>
+        <div class="hint">Pedidos que terminaron en compra.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">De visita a compra</div>
+        <div class="value">3,9%</div>
+        <div class="delta up">▲ +2,4 puntos</div>
+        <div class="hint">De cada 100 visitas, casi 4 acabaron comprando.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Ventas (antes de devoluciones)</div>
+        <div class="value">196,8 M€</div>
+        <div class="delta up">▲ +13,2%</div>
+        <div class="hint">Todo lo vendido, sin descontar lo que se devuelve.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Ventas reales (tras devoluciones)</div>
+        <div class="value">130,9 M€</div>
+        <div class="delta up">▲ +14,2%</div>
+        <div class="hint">Lo que de verdad se quedó el cliente.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Gasto en publicidad</div>
+        <div class="value">3,88 M€</div>
+        <div class="delta up">▲ +41,9%</div>
+        <div class="hint">Lo invertido en anuncios para traer gente.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Retorno de la publicidad</div>
+        <div class="value">11,7 €</div>
+        <div class="delta up">▲ +3,6%</div>
+        <div class="hint">Por cada 1 € en anuncios, ingresamos 11,7 €.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Coste por clic en anuncios</div>
+        <div class="value">0,13 €</div>
+        <div class="delta up">▲ +22,8% más caro</div>
+        <div class="hint">Lo que pagamos cada vez que alguien pincha un anuncio.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Coste por 1.000 anuncios mostrados</div>
+        <div class="value">1,67 €</div>
+        <div class="delta up">▲ +5,9% más caro</div>
+        <div class="hint">Precio de enseñar el anuncio 1.000 veces.</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Peso de la publicidad sobre ventas</div>
+        <div class="value">3,0%</div>
+        <div class="delta up">▲ +0,6 puntos</div>
+        <div class="hint">De cada 100 € vendidos, 3 € se fueron en anuncios.</div>
+      </div>
+    </div>
+    <p class="callout">
+      <strong>En una frase:</strong> vendimos <mark class="good">+14% más</mark> que el año pasado,
+      pero gastamos <mark class="bad">+42% más en publicidad</mark> para traer apenas
+      <mark>+2% de visitas</mark>. Es decir, traer gente nueva nos está saliendo más caro.
+      Aun así, sigue siendo rentable porque quienes entran compran más que antes.
+    </p>
+  </section>
+
+  <!-- Canales -->
+  <section>
+    <div class="sec-title">¿De dónde viene la gente?</div>
+    <p class="sec-sub">Las distintas formas en que la gente llega a la web: escribiendo la dirección, desde Google, desde un anuncio, desde un email, etc. Vemos cuántos llegan por cada vía y cuántos acaban comprando.</p>
+    <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Por dónde llegan</th>
+          <th title="Número de visitas que llegaron por esta vía">Visitas</th>
+          <th title="Qué porcentaje del total de visitas representa">% del total</th>
+          <th title="Qué porcentaje de todas las compras vino por aquí">% de compras</th>
+          <th title="De cada 100 visitas por esta vía, cuántas acaban comprando">De visita a compra</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Escriben la dirección o entran directos</td><td>76.559.543</td><td>43,5%</td><td>48,3%</td><td>4,3%</td></tr>
+        <tr><td>Buscando en Google (sin anuncio)</td><td>37.204.475</td><td>21,2%</td><td>19,4%</td><td>3,6%</td></tr>
+        <tr><td>Anuncios en buscadores</td><td>16.606.242</td><td>9,4%</td><td>9,3%</td><td>3,8%</td></tr>
+        <tr><td>Anuncios en redes sociales</td><td>12.861.403</td><td>7,3%</td><td>4,5%</td><td><mark class="bad">2,4%</mark></td></tr>
+        <tr><td>Avisos en el móvil (promociones)</td><td>9.597.765</td><td>5,5%</td><td>5,2%</td><td>3,7%</td></tr>
+        <tr><td>Emails de pedidos (confirmaciones, envíos)</td><td>6.371.169</td><td>3,6%</td><td>3,8%</td><td>4,1%</td></tr>
+        <tr><td>Avisos en el móvil (sobre tu pedido)</td><td>4.385.004</td><td>2,5%</td><td>3,5%</td><td><mark class="good">5,4%</mark></td></tr>
+        <tr><td>Redes sociales (sin pagar)</td><td>3.927.691</td><td>2,2%</td><td>1,8%</td><td>3,1%</td></tr>
+        <tr><td>Webs colaboradoras que nos recomiendan</td><td>3.364.226</td><td>1,9%</td><td>1,8%</td><td>3,8%</td></tr>
+        <tr><td>Newsletter por email</td><td>2.251.229</td><td>1,3%</td><td>1,2%</td><td>3,7%</td></tr>
+        <tr><td>Mensajes SMS</td><td>1.982.324</td><td>1,1%</td><td>0,5%</td><td><mark class="bad">1,6%</mark></td></tr>
+        <tr><td>Enlaces desde otras webs</td><td>539.571</td><td>0,3%</td><td>0,4%</td><td>4,6%</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td>Total</td><td>175.878.907</td><td>100%</td><td>100%</td><td>3,9%</td></tr>
+      </tfoot>
+    </table>
+    </div>
+    <ul class="notes">
+      <li><span class="tag good">Lo mejor</span><p>La mayoría entra <strong>directamente</strong> (escribiendo la dirección o desde marcadores): <mark>casi la mitad</mark> de las visitas y de las compras. Señal de que tenemos muchos clientes fieles que ya nos conocen.</p></li>
+      <li><span class="tag good">Sorpresa</span><p>Los <strong>avisos en el móvil sobre el pedido</strong> son los que más convierten (<mark class="good">5,4 de cada 100 compran</mark>) aunque traen poca gente. Una vía pequeña pero muy efectiva que podríamos aprovechar más.</p></li>
+      <li><span class="tag alert">A revisar</span><p>Los <strong>anuncios en redes sociales</strong> traen bastante gente, pero pocos compran (<mark class="bad">solo 2,4 de cada 100</mark>). Conviene revisar qué anuncios estamos enseñando y a quién.</p></li>
+      <li><span class="tag alert">Flojo</span><p>Los <strong>SMS</strong> son la vía que peor funciona: traen poca gente y casi nadie compra.</p></li>
+    </ul>
+  </section>
+
+  <!-- Mercados -->
+  <section>
+    <div class="sec-title">¿Cómo nos fue en cada país?</div>
+    <p class="sec-sub">Los 10 países que más nos visitan. Entre paréntesis, cómo ha cambiado cada cifra respecto al año pasado.</p>
+    <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>País</th>
+          <th title="Visitas a la web desde ese país">Visitas</th>
+          <th title="Cambio de visitas respecto al año pasado">vs. año pasado</th>
+          <th title="Lo vendido en ese país (antes de devoluciones)">Ventas</th>
+          <th title="Gasto en publicidad en ese país">Gasto en anuncios</th>
+          <th title="Euros ingresados por cada euro invertido en anuncios">Retorno publi.</th>
+          <th title="Coste por clic en sus anuncios">Coste/clic</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>🇪🇸 España</td><td>41.176.206</td><td class="down"><mark class="bad">-4,0%</mark></td><td>44,06 M€ <span class="up">(+3,3%)</span></td><td>593.829 € <span class="up">(-0,8%)</span></td><td>15,7 €</td><td>0,09 €</td></tr>
+        <tr><td>🇹🇷 Turquía</td><td>26.910.358</td><td class="down"><mark class="bad">-9,5%</mark></td><td>16,17 M€ <span class="up">(+20,6%)</span></td><td>119.321 € <span class="up">(-11,2%)</span></td><td>12,6 €</td><td>0,04 €</td></tr>
+        <tr><td>🇲🇽 México</td><td>11.666.846</td><td class="up">+4,0%</td><td>8,71 M€ <span class="up">(+11,2%)</span></td><td>172.852 € (+10,4%)</td><td>10,8 €</td><td>0,06 €</td></tr>
+        <tr><td>🇫🇷 Francia</td><td>12.661.544</td><td class="up">+15,7%</td><td>15,30 M€ <span class="up">(+23,1%)</span></td><td>752.469 € <span class="down">(+164,8%)</span></td><td><mark class="bad">6,3 €</mark></td><td>0,25 €</td></tr>
+        <tr><td>🇩🇪 Alemania</td><td>10.047.302</td><td class="up">+18,0%</td><td><mark class="good">30,36 M€</mark> <span class="up">(+21,4%)</span></td><td>626.087 € (+36,1%)</td><td>11,6 €</td><td>0,28 €</td></tr>
+        <tr><td>🇵🇱 Polonia</td><td>9.554.670</td><td class="up">+7,7%</td><td>11,30 M€ <span class="up">(+9,6%)</span></td><td>133.686 € (-2,0%)</td><td><mark class="good">24,1 €</mark></td><td>0,06 €</td></tr>
+        <tr><td>🇮🇹 Italia</td><td>9.294.137</td><td class="up">+2,4%</td><td>8,57 M€ <span class="up">(+14,8%)</span></td><td>181.711 € (+8,2%)</td><td>8,5 €</td><td>0,11 €</td></tr>
+        <tr><td>🇬🇧 Reino Unido</td><td>8.667.892</td><td class="up">+10,2%</td><td>13,47 M€ <span class="up">(+7,6%)</span></td><td>516.243 € (+29,6%)</td><td>13,1 €</td><td>0,22 €</td></tr>
+        <tr><td>🇵🇹 Portugal</td><td>7.430.625</td><td class="down">-8,3%</td><td>5,31 M€ <span class="up">(+6,8%)</span></td><td>100.985 € (+28,6%)</td><td>15,5 €</td><td>0,08 €</td></tr>
+        <tr><td>🇳🇱 Países Bajos</td><td>5.122.138</td><td class="up">+14,3%</td><td>12,24 M€ <span class="up">(+24,2%)</span></td><td>362.033 € (+137,3%)</td><td>13,2 €</td><td>0,25 €</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <ul class="notes">
+      <li><span class="tag alert">Ojo</span><p>En <strong>España y Turquía</strong> nos visita <mark class="bad">menos gente que el año pasado</mark>, pero vendemos más. Significa que quien compra se gasta más. No es un problema de ventas, sino de atraer visitantes nuevos.</p></li>
+      <li><span class="tag alert">Caro</span><p><strong>Francia</strong> ha multiplicado su gasto en publicidad (<mark class="bad">casi el triple</mark>) pero es donde menos rinde cada euro invertido (<mark>6,3 €</mark> por cada euro, frente a la media de 11,7 €). Conviene revisar si merece la pena gastar tanto.</p></li>
+      <li><span class="tag good">Joya</span><p><strong>Polonia</strong> es el país más rentable: cada euro en publicidad nos devuelve <mark class="good">24 €</mark>, y traer visitas allí es baratísimo. Buen candidato para invertir más.</p></li>
+      <li><span class="tag good">Grande</span><p><strong>Alemania</strong> es donde más vendemos (<mark class="good">30 M€</mark>) y además lo hace de forma rentable.</p></li>
+    </ul>
+  </section>
+
+  <!-- Resumen ejecutivo -->
+  <section>
+    <div class="sec-title">En resumen: qué va bien y qué vigilar</div>
+    <p class="sec-sub">Un vistazo rápido a la salud del negocio y qué hacer en cada caso. Verde: bien. Amarillo: atención. Rojo: hay que actuar.</p>
+    <div class="exec">
+      <div class="exec-row"><div class="a">Gente que nos visita</div><div class="s"><span class="dot y"></span>Casi igual (+1,6%)</div><div class="x">Atraer más visitas por vías gratuitas (Google, redes).</div></div>
+      <div class="exec-row"><div class="a">Visitas que compran</div><div class="s"><span class="dot g"></span>Mejora</div><div class="x">La web convence más; mantener esa buena experiencia.</div></div>
+      <div class="exec-row"><div class="a">Ventas reales</div><div class="s"><span class="dot g"></span>Fuertes (+14,2%)</div><div class="x">Vamos bien, seguir así.</div></div>
+      <div class="exec-row"><div class="a">Gasto en publicidad</div><div class="s"><span class="dot r"></span>Sube mucho (+41,9%)</div><div class="x">Revisar la inversión, sobre todo en Francia.</div></div>
+      <div class="exec-row"><div class="a">Mejor vía de entrada</div><div class="s"><span class="dot g"></span>Avisos en el móvil</div><div class="x">Usarlos más: pocos llegan pero muchos compran.</div></div>
+      <div class="exec-row"><div class="a">País más prometedor</div><div class="s"><span class="dot g"></span>Polonia</div><div class="x">Invertir más: es donde la publicidad más rinde.</div></div>
+      <div class="exec-row"><div class="a">País a vigilar</div><div class="s"><span class="dot r"></span>España y Turquía</div><div class="x">Buscar formas de atraer visitantes nuevos.</div></div>
+    </div>
+  </section>
+
+  <!-- Glosario -->
+  <section>
+    <details class="glos">
+      <summary>¿Qué significan algunos términos? (glosario)</summary>
+      <dl>
+        <dt>Visita</dt>
+        <dd>Cada vez que alguien entra en la web. Una misma persona puede generar varias visitas.</dd>
+        <dt>De visita a compra (conversión)</dt>
+        <dd>De cada 100 personas que entran, cuántas terminan comprando. Cuanto más alto, mejor.</dd>
+        <dt>Ventas antes de devoluciones (venta bruta)</dt>
+        <dd>Todo lo que se vendió, sin descontar todavía lo que la gente devuelve.</dd>
+        <dt>Ventas reales (venta neta)</dt>
+        <dd>Lo que de verdad nos quedamos después de restar las devoluciones.</dd>
+        <dt>Gasto en publicidad</dt>
+        <dd>El dinero invertido en anuncios (en Google, redes sociales, etc.) para que la gente nos conozca y entre.</dd>
+        <dt>Retorno de la publicidad</dt>
+        <dd>Cuántos euros ingresamos por cada euro gastado en anuncios. Si pone «11,7 €», significa que por 1 € de anuncio entran 11,7 € de venta.</dd>
+        <dt>Coste por clic</dt>
+        <dd>Lo que pagamos cada vez que alguien pincha en uno de nuestros anuncios.</dd>
+        <dt>Coste por 1.000 anuncios mostrados</dt>
+        <dd>Lo que cuesta que un anuncio aparezca 1.000 veces en pantalla, aunque nadie lo pinche.</dd>
+        <dt>vs. año pasado</dt>
+        <dd>Comparación con el mismo periodo del año anterior, para saber si vamos a mejor o a peor.</dd>
+        <dt>Puntos (p.p.)</dt>
+        <dd>Forma de comparar porcentajes. Pasar del 1,5% al 3,9% es subir 2,4 puntos.</dd>
+      </dl>
+    </details>
+  </section>
+
+  <footer>
+    Datos del comportamiento de la tienda online. Periodo: 1 de enero – 2 de junio de 2025, comparado con el mismo periodo de 2024.
+  </footer>
+
+</div>
+</body>
+</html>
